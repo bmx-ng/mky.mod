@@ -786,7 +786,7 @@ The following material properties are supported:
 	This method should return @material if successful, or null on failure.
 	end rem
 	Method OnLoadMaterial:TMaterial( material:TMaterial,path:String,texFlags:Int )
-		Local texture:TTexture=TTexture.Load( path,4,texFlags )
+		Local texture:TTexture=TTexture.Load( path,PF_RGBA8888,texFlags )
 		If Not texture Return Null
 		material.SetTexture "ColorTexture",texture
 		If texture texture.Free
@@ -1247,6 +1247,17 @@ Type TImage
 	Const Mipmap:Int=TTexture.Mipmap
 	Const Managed:Int=TTexture.Managed
 	
+	Rem
+	bbdoc: Creates a new image for rendering.
+	about: The new image can be used as a render target for a [[Canvas]].
+The @flags parameter can be any bitwise combination of:
+| @Flags			| @Description
+| TImage.Filter		| The image is filtered
+| TImage.Mipmap		| The image is mipmapped
+| TImage.Managed	| The image is managed
+The TImage.Managed flag should be used if you want mojo2 to preserve the image contents when the graphics mode changes. This is not necessary if the image is being re-rendered every frame.
+TImage.Managed consumes more memory, and slows down image rendering somewhat so should be avoided if possible.
+	End Rem
 	Method Create:TImage( width:Int,height:Int,xhandle:Float=.5,yhandle:Float=.5,flags:Int=TImage.Filter )
 		flags:&_flagsMask
 		Local texture:TTexture=New TTexture.Create( width,height,PF_RGBA8888,flags|TTexture.ClampST|TTexture.RenderTarget )
@@ -1258,6 +1269,10 @@ Type TImage
 		Return Self
 	End Method
 	
+	Rem
+	bbdoc: Creates a new image from a region within an existing image.
+	about: The new image shares the same material and image flags as @image.
+	End Rem
 	Method CreateImage:TImage( image:TImage,x:Int,y:Int,width:Int,height:Int,xhandle:Float=.5,yhandle:Float=.5 )
 		_material=image._material
 		_material.Retain
@@ -1269,6 +1284,9 @@ Type TImage
 		Return Self
 	End Method
 	
+	Rem
+	bbdoc: Creates a new image from a material.
+	End Rem
 	Method CreateMaterial:TImage( material:TMaterial,xhandle:Float=.5,yhandle:Float=.5 )
 		Local texture:TTexture=material.ColorTexture()
 		If Not texture Throw "Material has no ColorTexture"
@@ -1280,7 +1298,10 @@ Type TImage
 		Return Self
 	End Method
 
-	Method CreateMaterialSize:TImage( material:TMaterial,x:Int,y:Int,width:Int,height:Int,xhandle:Float=.5,yhandle:Float=.5 )
+	Rem
+	bbdoc: Creates a new image representing a rect within a material.
+	End Rem
+	Method CreateMaterialRect:TImage( material:TMaterial,x:Int,y:Int,width:Int,height:Int,xhandle:Float=.5,yhandle:Float=.5 )
 		Local texture:TTexture=material.ColorTexture()
 		If Not texture Throw "Material has no ColorTexture"
 		_material=material
@@ -1293,6 +1314,13 @@ Type TImage
 		Return Self
 	End Method
 
+	Method Delete()
+		Discard()
+	End Method
+
+	Rem
+	bbdoc: Discards any internal resources such as videomem used by the image.
+	End Rem
 	Method Discard()
 		If _material _material.Free
 		_material=Null
@@ -1302,38 +1330,66 @@ Type TImage
 		Return _material
 	End Method
 	
+	Rem
+	bbdoc: Gets x coordinate of the left edge of the image rect.
+	End Rem
 	Method X0:Float()
 		Return _x0
 	End Method
 	
+	Rem
+	bbdoc: Gets y coordinate of the top edge of the image rect.
+	End Rem
 	Method Y0:Float()
 		Return _y0
 	End Method
 	
+	Rem
+	bbdoc: Gets x coordinate of the right edge of the image rect.
+	End Rem
 	Method X1:Float()
 		Return _x1
 	End Method
 	
+	Rem
+	bbdoc: Gets y coordinate of the bottom edge of the image rect.
+	End Rem
 	Method Y1:Float()
 		Return _y1
 	End Method
 	
+	Rem
+	bbdoc: Gets image width.
+	End Rem
 	Method Width:Int()
 		Return _width
 	End Method
 	
+	Rem
+	bbdoc: Gets image height.
+	End Rem
 	Method Height:Int()
 		Return _height
 	End Method
 	
+	Rem
+	bbdoc: Gets image x handle.
+	End Rem
 	Method HandleX:Float()
 		Return -_x0/(_x1-_x0)
 	End Method
 	
+	Rem
+	bbdoc: Gets image y handle.
+	End Rem
 	Method HandleY:Float()
 		Return -_y0/(_y1-_y0)
 	End Method
 	
+	Rem
+	bbdoc: Writes pixel data to image.
+	about: Pixels should be in premultiplied alpha format.
+	End Rem
 	Method WritePixels( x:Int,y:Int,width:Int,height:Int,data:TPixmap,dataOffset:Int=0,dataPitch:Int=0 )
 		_material.ColorTexture().WritePixels( x+_x,y+_y,width,height,data,dataOffset,dataPitch )
 	End Method
@@ -1349,10 +1405,18 @@ Type TImage
 		_t1=Float(_y+_height)/Float(_material.Height)
 	End Method
 	
+	Rem
+	bbdoc: Set image shadow caster.
+	about: Attaching a shadow caster to an image will cause the shadow caster to be automatically added to the
+	drawlist whenever the image is drawn.
+	End Rem
 	Method SetShadowCaster( shadowCaster:TShadowCaster )
 		_caster=shadowCaster
 	End Method
 	
+	Rem
+	bbdoc: Gets attached shadow caster.
+	End Rem
 	Method ShadowCaster:TShadowCaster()
 		Return _caster
 	End Method
@@ -1365,14 +1429,26 @@ Type TImage
 		Return TTexture.TexturesLoading>0
 	End Function
 	
+	Rem
+	bbdoc: Sets an internal 'flags mask' that can be used to filter out specific image flags when creating images.
+	about: The flags mask value is 'anded' with any flags values passed to Image.New, Image.Load or Image.LoadFrames.
+	For example, by setting the flags mask to just Image.Managed, the Image.Filter and Image.Mipmap flags will be effectively disabled for all images - useful for pixel art or retro style graphics.
+	The default flags mask is Image.Filter|Image.Mipmap|Image.Managed, which effectively disables the filter.
+	End Rem
 	Function SetFlagsMask( mask:Int )
 		_flagsMask=mask
 	End Function
 	
+	Rem
+	bbdoc: Returns the current flags mask.
+	End Rem
 	Function FlagsMask:Int()
 		Return _flagsMask
 	End Function
 	
+	Rem
+	bbdoc: 
+	End Rem
 	Function Load:TImage( path:String,xhandle:Float=.5,yhandle:Float=.5,flags:Int=TImage.Filter|TImage.Mipmap,shader:TShader=Null )
 		flags:&_flagsMask
 	
@@ -1401,7 +1477,7 @@ Type TImage
 		Local frames:TImage[]=New TImage[numFrames]
 		
 		For Local i:Int=0 Until numFrames
-			frames[i]=New TImage.CreateMaterialSize( material,i*cellWidth+x,0,width,cellHeight,xhandle,yhandle )
+			frames[i]=New TImage.CreateMaterialRect( material,i*cellWidth+x,0,width,cellHeight,xhandle,yhandle )
 		Next
 		
 		Return frames
@@ -1417,11 +1493,6 @@ Type TImage
 	Field _s0:Float=0 ,_t0:Float=0 ,_s1:Float=1,_t1:Float=1
 
 	Field _caster:TShadowCaster
-	
-'	Method SetFrame( x0:Float,y0:Float,x1:Float,y1:Float,s0:Float,t0:Float,s1:Float,t1:Float )
-'		_x0=x0;_y0=y0;_x1=x1;_y1=y1
-'		_s0=s0;_t0=t0;_s1=s1;_t1=t1
-'	End
 	
 End Type
 
