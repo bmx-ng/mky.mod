@@ -57,11 +57,6 @@ End Interface
 
 Type TRenderer
 
-	Method New()
-		_canvas=New TCanvas.CreateCanvas()
-		Mat4Ortho( 0,_canvas.Width,0,_canvas.Height,-1,1,_projectionMatrix )
-	End Method
-	
 	Method SetClearMode( clearMode:Int )
 		_clearMode=clearMode
 	End Method
@@ -110,10 +105,7 @@ Type TRenderer
 		Local px1:Float=tvector[0]
 		Local py1:Float=tvector[1]
 
-		Local twidth:Float=px1-px0,theight:Float=py1-py0
-
-'		Local twidth:Int=vwidth/1
-'		Local theight:Int=vheight/1
+		Local twidth:Int=px1-px0,theight:Int=py1-py0
 		
 		If Not _timage Or _timage.Width()<>twidth Or _timage.Height()<>theight
 			_timage=New TImage.Create( twidth,theight,0,0 )
@@ -163,10 +155,7 @@ Type TRenderer
 					canvas.SetLightType i,0
 				Next
 			
-				'canvas.SetRenderTarget _image
 				canvas.SetShadowMap Null'_timage
-				'canvas.SetViewport _viewport[0],_viewport[1],_viewport[2],_viewport[3]
-				'canvas.SetProjectionMatrix _projectionMatrix
 				canvas.SetViewMatrix _viewMatrix
 				canvas.SetModelMatrix layerMatrix
 				canvas.SetAmbientLight _ambientLight[0],_ambientLight[1],_ambientLight[2],1
@@ -193,8 +182,6 @@ Type TRenderer
 				canvas=_tcanvas
 				canvas.SetRenderTarget _timage
 				canvas.SetShadowMap Null
-				'canvas.SetViewport 0,0,twidth,theight
-				'canvas.SetProjectionMatrix _projectionMatrix
 				canvas.SetViewMatrix _viewMatrix
 				canvas.SetModelMatrix layerMatrix
 				canvas.SetAmbientLight 0,0,0,0
