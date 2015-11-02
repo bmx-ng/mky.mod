@@ -14,8 +14,8 @@ Graphics 800, 600, 0
 Const NUM_LIGHTS:Int = 5
 
 Local canvas:TCanvas = New TCanvas.CreateCanvas()
-'canvas.SetViewport( 0,0,GraphicsWidth(),GraphicsHeight())
-'canvas.SetProjectionMatrix( Mat4Ortho( 0,640,0,480,-1,1 ) )
+canvas.SetViewport( 0,0,GraphicsWidth(),GraphicsHeight())
+canvas.SetProjectionMatrix( Mat4Ortho( 0,640,0,480,-1,1 ) )
 
 
 
