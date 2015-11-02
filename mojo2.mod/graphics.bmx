@@ -63,8 +63,6 @@ Global _defaultShader:TShader
 Global freeOps:TDrawOpStack=New TDrawOpStack
 Global nullOp:TDrawOp=New TDrawOp
 
-Global tmpi:Int[16]
-Global tmpf:Float[16]
 Global defaultFbo:Int
 
 Global tmpMat2d:Float[6]
@@ -125,7 +123,10 @@ End Type
 Private
 
 Function InitVbos()
-	If vbosSeq=graphicsSeq Return
+	If vbosSeq=graphicsSeq 
+		BindVbos()
+		Return
+	EndIf
 	vbosSeq=graphicsSeq
 
 	glGenBuffers 1, Varptr rs_vbo
@@ -162,6 +163,16 @@ Function InitVbos()
 	'idxs.Discard
 End Function
 
+Function BindVbos()
+	glBindBuffer( GL_ARRAY_BUFFER,rs_vbo )
+	glEnableVertexAttribArray( 0 ) ; glVertexAttribPointer 0,2,GL_FLOAT,False,BYTES_PER_VERTEX, 0
+	glEnableVertexAttribArray( 1 ) ; glVertexAttribPointer 1,2,GL_FLOAT,False,BYTES_PER_VERTEX, 8
+	glEnableVertexAttribArray( 2 ) ; glVertexAttribPointer 2,2,GL_FLOAT,False,BYTES_PER_VERTEX, 16
+	glEnableVertexAttribArray( 3 ) ; glVertexAttribPointer 3,4,GL_UNSIGNED_BYTE,True,BYTES_PER_VERTEX, 24
+
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER,rs_ibo )
+End Function
+
 Global inited:Int
 
 Function InitMojo2()
@@ -174,8 +185,7 @@ Function InitMojo2()
 	
 	InitVbos
 	
-	glGetIntegerv GL_FRAMEBUFFER_BINDING,tmpi
-	defaultFbo=tmpi[0]
+	glGetIntegerv GL_FRAMEBUFFER_BINDING, Varptr defaultFbo
 	
 	mainShader=LoadString( "incbin::data/mojo2_program.glsl" )
 	
@@ -216,7 +226,7 @@ End Type
 
 '***** Texture *****
 
-rem
+Rem
 bbdoc: Textures contains image data for use by shaders when rendering.
 about: For more information, please see the #TShader type.
 end rem
@@ -281,35 +291,35 @@ Type TTexture Extends TRefCounted
 		_glFramebuffer=0
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Gets texture width.
 	end rem
 	Method Width:Int()
 		Return _width
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Gets texture height.
 	end rem
 	Method Height:Int()
 		Return _height
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Gets texture format.
 	end rem
 	Method Format:Int()
 		Return _format
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Gets texture flags.
 	end rem
 	Method Flags:Int()
 		Return _flags
 	End Method
 
-	rem
+	Rem
 	bbdoc: Writes pixel data to texture.
 	about: Pixels should be in premultiplied alpha format.
 	end rem
@@ -404,7 +414,7 @@ Type TTexture Extends TRefCounted
 			Return 0
 	End Function
 	
-	rem
+	Rem
 	bbdoc: Loads a texture from a url.
 	end rem
 	Function Load:TTexture( url:Object,format:Int=PF_RGBA8888,flags:Int=Filter|Mipmap|ClampST )
@@ -452,7 +462,7 @@ Type TTexture Extends TRefCounted
 		Return tex
 	End Function
 	
-	rem
+	Rem
 	bbdoc: Returns a stock single texel black texture.
 	end rem
 	Function Black:TTexture()
@@ -460,7 +470,7 @@ Type TTexture Extends TRefCounted
 		Return _black
 	End Function
 	
-	rem
+	Rem
 	bbdoc: Returns a stock single texel white texture.
 	end rem
 	Function White:TTexture()
@@ -468,7 +478,7 @@ Type TTexture Extends TRefCounted
 		Return _white
 	End Function
 	
-	rem
+	Rem
 	bbdoc: Returnss a stock single texel magenta texture.
 	end rem
 	Function Magenta:TTexture()
@@ -476,7 +486,7 @@ Type TTexture Extends TRefCounted
 		Return _magenta
 	End Function
 	
-	rem
+	Rem
 	bbdoc: Returns a stock single texel 'flat' texture for normal mapping.
 	end rem
 	Function Flat:TTexture()
@@ -847,8 +857,9 @@ The following material properties are supported:
 		Local kind:Int
 		Local buf:Byte[1024]
 		Local l:Int
-		glGetProgramiv program,GL_ACTIVE_UNIFORMS,tmpi
-		For Local i:Int=0 Until tmpi[0]
+		Local n:Int
+		glGetProgramiv program,GL_ACTIVE_UNIFORMS, Varptr n
+		For Local i:Int=0 Until n
 			glGetActiveUniform program,i,1024,Varptr l,Varptr size, Varptr kind, buf
 			Local name:String = String.FromBytes(buf, l)
 			If _uniforms.Contains( name )
@@ -1616,7 +1627,7 @@ Type TDrawList
 		Return _color[3]
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Sets the current 2d matrix to the identity matrix.
 	about: Same as SetMatrix( 1,0,0,1,0,0 ).
 	end rem
@@ -1626,7 +1637,7 @@ Type TDrawList
 		_tx=0;_ty=0
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Sets the current 2d matrix to the given matrix.
 	end rem
 	Method SetMatrix( ix:Float,iy:Float,jx:Float,jy:Float,tx:Float,ty:Float )
@@ -1635,7 +1646,7 @@ Type TDrawList
 		_tx=tx;_ty=ty
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Gets the current 2d matrix.
 	end rem
 	Method GetMatrix( matrix:Float[] )
@@ -1647,7 +1658,7 @@ Type TDrawList
 		matrix[5]=_ty
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Multiplies the current 2d matrix by the given matrix.
 	end rem
 	Method Transform( ix:Float,iy:Float,jx:Float,jy:Float,tx:Float,ty:Float )
@@ -1660,28 +1671,28 @@ Type TDrawList
 		SetMatrix ix2,iy2,jx2,jy2,tx2,ty2
 	End Method
 
-	rem
+	Rem
 	bbdoc: Translates the current 2d matrix.
 	end rem
 	Method Translate( tx:Float,ty:Float )
 		Transform 1,0,0,1,tx,ty
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Rotates the current 2d matrix.
 	end rem
 	Method Rotate( rz:Float )
 		Transform Cos( rz ),-Sin( rz ),Sin( rz ),Cos( rz ),0,0
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Scales the current 2d matrix.
 	end rem
 	Method Scale( sx:Float,sy:Float )
 		Transform sx,0,0,sy,0,0
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Translates and rotates (in that order) the current 2d matrix.
 	end rem
 	Method TranslateRotate( tx:Float,ty:Float,rz:Float )
@@ -1689,7 +1700,7 @@ Type TDrawList
 		Rotate rz
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Rotates and scales (in that order) the current 2d matrix.
 	end rem
 	Method RotateScale( rz:Float,sx:Float,sy:Float )
@@ -1702,7 +1713,7 @@ Type TDrawList
 		Scale sx,sy
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Translates, rotates and scales (in that order) the current 2d matrix.
 	end rem
 	Method TranslateRotateScale( tx:Float,ty:Float,rz:Float,sx:Float,sy:Float )
@@ -1711,7 +1722,7 @@ Type TDrawList
 		Scale sx,sy
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Sets the maximum number of 2d matrices that can be pushed onto the matrix stack using @PushMatrix.
 	end rem
 	Method SetMatrixStackCapacity( capacity:Int )
@@ -1720,14 +1731,14 @@ Type TDrawList
 		_matSp=0
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Gets the maximum number of 2d matrices that can be pushed onto the matrix stack using @PushMatrix.
 	end rem
 	Method MatrixStackCapacity:Int()
 		Return _matStack.Length/6
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Pushes the current 2d matrix on the 2d matrix stack.
 	end rem
 	Method PushMatrix()
@@ -1738,7 +1749,7 @@ Type TDrawList
 		If _matSp>=_matStack.Length _matSp:-_matStack.Length
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Pops the current 2d matrix from the 2d matrix stack.
 	end rem
 	Method PopMatrix()
@@ -1752,7 +1763,7 @@ Type TDrawList
 		_ty=_matStack[_matSp+5]
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Sets current font for use with #DrawText.
 	about: 	If @font is null, a default font is used.
 	end rem
@@ -1761,28 +1772,28 @@ Type TDrawList
 		_font=font
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Gets the current font.
 	end rem
 	Method Font:TFont()
 		Return _font
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Sets the default material used for drawing operations that use a null material.
 	end rem
 	Method SetDefaultMaterial( material:TMaterial )
 		_defaultMaterial=material
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Returns the current default material.
 	end rem
 	Method DefaultMaterial:TMaterial()
 		Return _defaultMaterial
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Draws a point at @x0,@y0.
 	about: If @material is null, the current default material is used.
 	end rem
@@ -1791,7 +1802,7 @@ Type TDrawList
 		PrimVert x0+.5,y0+.5,s0,t0
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Draws a line from @x0,@y0 to @x1,@y1.
 	about: If @material is null, the current default material is used.
 	end rem
@@ -1967,7 +1978,7 @@ Type TDrawList
 	
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Draws a rect from @x,@y to @x+@width,@y+@height.
 	about: If @material is null, the current default material is used.
 	end rem
@@ -1981,7 +1992,7 @@ Type TDrawList
 		PrimVert x0,y1,s0,t1
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Draws a rect from @x,@y to @x+@width,@y+@height filled with @image.
 	about: The image's handle is ignored.
 	end rem
@@ -1989,7 +2000,7 @@ Type TDrawList
 		DrawRect x0,y0,width,height,image._material,image._s0,image._t0,image._s1,image._t1
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Draws a rect at @x,@y filled with the given subrect of @image.
 	about: The image's handle is ignored.
 	end rem
@@ -1997,7 +2008,7 @@ Type TDrawList
 		DrawRectImageSourceSize( x,y,sourceWidth,sourceHeight,image,sourceX,sourceY,sourceWidth,sourceHeight )
 	End Method
 
-	rem
+	Rem
 	bbdoc: Draws a rect from @x,@y to @x+@width,@y+@height filled with the given subrect of @image.
 	about: The image's handle is ignored.
 	end rem
@@ -2083,7 +2094,7 @@ Type TDrawList
 		PopMatrix
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Draws @text at @x,@y in the current font.
 	end rem
 	Method DrawText( Text:String,x:Float,y:Float,xhandle:Float=0,yhandle:Float=0 )
@@ -2097,7 +2108,7 @@ Type TDrawList
 		Next
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Draws a shadow volume.
 	end rem
 	Method DrawShadow:Int( lx:Float,ly:Float,x0:Float,y0:Float,x1:Float,y1:Float )
@@ -2136,7 +2147,7 @@ Type TDrawList
 		Return True
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Draws multiple shadow volumes.
 	end rem
 	Method DrawShadows( x0:Float,y0:Float,drawList:TDrawList )
@@ -2172,7 +2183,7 @@ Type TDrawList
 		
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Adds a shadow caster to the drawlist.
 	end rem
 	Method AddShadowCaster( caster:TShadowCaster )
@@ -2186,7 +2197,7 @@ Type TDrawList
 		Next
 	End Method
 	
-	rem
+	Rem
 	bbdoc: Adds a shadow caster to the drawlist at @tx,@ty.
 	end rem
 	Method AddShadowCasterXY( caster:TShadowCaster,tx:Float,ty:Float )
