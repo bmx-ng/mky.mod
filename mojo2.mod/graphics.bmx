@@ -1654,7 +1654,7 @@ Type TDrawList
 		_color = __colorArray
 		
 		SetFont Null
-		SetDefaultMaterial _fastShader.DefaultMaterial
+		SetDefaultMaterial _fastShader.DefaultMaterial()
 	End Method
 	
 	Method SetBlendMode( blend:Int )

@@ -191,7 +191,7 @@ Type TRenderer
 				canvas.SetBlendMode 0
 				canvas.SetColor 0,0,0,0
 
-				canvas.SetDefaultMaterial TShader.ShadowShader().DefaultMaterial
+				canvas.SetDefaultMaterial TShader.ShadowShader().DefaultMaterial()
 				
 				For Local i:Int=0 Until numLights
 				
@@ -221,7 +221,7 @@ Type TRenderer
 				
 				Next
 				
-				canvas.SetDefaultMaterial TShader.FastShader().DefaultMaterial
+				canvas.SetDefaultMaterial TShader.FastShader().DefaultMaterial()
 				canvas.SetColorMask True,True,True,True
 				canvas.Flush
 				
