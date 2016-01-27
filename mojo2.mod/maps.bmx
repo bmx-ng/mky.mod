@@ -1,5 +1,5 @@
 ' 
-' Copyright (c) 2015 Bruce Henderson
+' Copyright (c) 2015-2016 Bruce Henderson
 ' 
 ' This software is provided 'as-is', without any express or implied
 ' warranty. In no event will the authors be held liable for any damages
@@ -77,9 +77,9 @@ Type TStringFloatMap
 		Return bmx_map_stringfloatmap_remove(key, Varptr _root)
 	End Method
 
-	Method _FirstNode:TStringNode()
+	Method _FirstNode:TStringFloatNode()
 		If Not IsEmpty() Then
-			Local node:TStringNode= New TStringNode
+			Local node:TStringFloatNode= New TStringFloatNode
 			node._root = _root
 			Return node
 		Else
@@ -88,12 +88,12 @@ Type TStringFloatMap
 	End Method
 	
 	Method Keys:TStringFloatMapEnumerator()
-		Local nodeenum:TStringNodeEnumerator
+		Local nodeenum:TStringFloatNodeEnumerator
 		If Not isEmpty() Then
-			nodeenum=New TStringKeyEnumerator
+			nodeenum=New TStringFloatKeyEnumerator
 			nodeenum._node=_FirstNode()
 		Else
-			nodeenum=New TStringEmptyEnumerator
+			nodeenum=New TStringFloatEmptyEnumerator
 		End If
 		Local mapenum:TStringFloatMapEnumerator=New TStringFloatMapEnumerator
 		mapenum._enumerator=nodeenum
@@ -105,12 +105,12 @@ Type TStringFloatMap
 	End Method
 	
 	Method Values:TStringFloatMapEnumerator()
-		Local nodeenum:TStringNodeEnumerator
+		Local nodeenum:TStringFloatNodeEnumerator
 		If Not isEmpty() Then
-			nodeenum=New TStringValueEnumerator
+			nodeenum=New TStringFloatValueEnumerator
 			nodeenum._node=_FirstNode()
 		Else
-			nodeenum=New TStringEmptyEnumerator
+			nodeenum=New TStringFloatEmptyEnumerator
 		End If
 		Local mapenum:TStringFloatMapEnumerator=New TStringFloatMapEnumerator
 		mapenum._enumerator=nodeenum
@@ -127,8 +127,8 @@ Type TStringFloatMap
 		Return map
 	End Method
 	
-	Method ObjectEnumerator:TStringNodeEnumerator()
-		Local nodeenum:TStringNodeEnumerator=New TStringNodeEnumerator
+	Method ObjectEnumerator:TStringFloatNodeEnumerator()
+		Local nodeenum:TStringFloatNodeEnumerator=New TStringFloatNodeEnumerator
 		nodeenum._node=_FirstNode()
 		nodeenum._map = Self
 ?ngcmod
@@ -145,7 +145,7 @@ Type TStringFloatMap
 
 End Type
 
-Type TStringNode
+Type TStringFloatNode
 	Field _root:Byte Ptr
 	Field _nodePtr:Byte Ptr
 	
@@ -161,7 +161,7 @@ Type TStringNode
 		Return bmx_map_stringfloatmap_hasnext(_nodePtr, _root)
 	End Method
 	
-	Method NextNode:TStringNode()
+	Method NextNode:TStringFloatNode()
 		If Not _nodePtr Then
 			_nodePtr = bmx_map_stringfloatmap_firstnode(_root)
 		Else
@@ -173,7 +173,7 @@ Type TStringNode
 	
 End Type
 
-Type TStringNodeEnumerator
+Type TStringFloatNodeEnumerator
 	Method HasNext()
 		Local has:Int = _node.HasNext()
 		If Not has Then
@@ -186,14 +186,14 @@ Type TStringNodeEnumerator
 ?ngcmod
 		Assert _expectedModCount = _map._modCount, "TStringFloatMap Concurrent Modification"
 ?
-		Local node:TStringNode=_node
+		Local node:TStringFloatNode=_node
 		_node=_node.NextNode()
 		Return node
 	End Method
 
 	'***** PRIVATE *****
 		
-	Field _node:TStringNode	
+	Field _node:TStringFloatNode	
 
 	Field _map:TStringFloatMap
 ?ngcmod
@@ -201,23 +201,23 @@ Type TStringNodeEnumerator
 ?
 End Type
 
-Type TStringKeyEnumerator Extends TStringNodeEnumerator
+Type TStringFloatKeyEnumerator Extends TStringFloatNodeEnumerator
 	Method NextObject:Object()
 ?ngcmod
 		Assert _expectedModCount = _map._modCount, "TStringFloatMap Concurrent Modification"
 ?
-		Local node:TStringNode=_node
+		Local node:TStringFloatNode=_node
 		_node=_node.NextNode()
 		Return node.Key()
 	End Method
 End Type
 
-Type TStringValueEnumerator Extends TStringNodeEnumerator
+Type TStringFloatValueEnumerator Extends TStringFloatNodeEnumerator
 	Method NextObject:Object()
 ?ngcmod
 		Assert _expectedModCount = _map._modCount, "TStringFloatMap Concurrent Modification"
 ?
-		Local node:TStringNode=_node
+		Local node:TStringFloatNode=_node
 		_node=_node.NextNode()
 		_floatObj.value = node.Value()
 		Return _floatObj
@@ -232,16 +232,15 @@ End Type
 
 
 Type TStringFloatMapEnumerator
-	Method ObjectEnumerator:TStringNodeEnumerator()
+	Method ObjectEnumerator:TStringFloatNodeEnumerator()
 		Return _enumerator
 	End Method
-	Field _enumerator:TStringNodeEnumerator
+	Field _enumerator:TStringFloatNodeEnumerator
 End Type
 
-Type TStringEmptyEnumerator Extends TStringNodeEnumerator
+Type TStringFloatEmptyEnumerator Extends TStringFloatNodeEnumerator
 	Method HasNext()
 		_map = Null
 		Return False
 	End Method
 End Type
-
