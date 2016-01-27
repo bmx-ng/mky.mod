@@ -20,7 +20,11 @@ freely, subject to the following restrictions:
 
 */
 #include "brl.mod/blitz.mod/blitz.h"
+#ifdef BMX_NG
 #include "brl.mod/blitz.mod/tree/tree.h"
+#else
+#include "tree/tree.h"
+#endif
 
 #define generic_compare(x, y) (((x) > (y)) - ((x) < (y)))
 

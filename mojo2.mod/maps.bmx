@@ -20,6 +20,9 @@
 Strict
 
 Import "maps.c"
+?Not bmxng
+Import "tree/tree.c"
+?
 
 Extern
 	Function bmx_map_stringfloatmap_clear(root:Byte Ptr Ptr)

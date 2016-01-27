@@ -35,6 +35,7 @@ Global tvector:Float[4]
 
 Public
 
+?bmxng
 Interface ILight
 
 	Method LightMatrix:Float[]()
@@ -54,6 +55,27 @@ Interface ILayer
 	Method OnRenderLayer( drawLists:TDrawListStack )
 	
 End Interface
+?Not bmxng
+Type ILight
+
+	Method LightMatrix:Float[]() Abstract
+	Method LightType:Int() Abstract
+	Method LightColor:Float[]() Abstract
+	Method LightRange:Float() Abstract
+	Method LightImage:TImage() Abstract
+	
+End Type
+
+Type ILayer
+
+	Method LayerMatrix:Float[]() Abstract
+	Method LayerFogColor:Float[]() Abstract
+	Method LayerLightMaskImage:TImage() Abstract
+	Method EnumLayerLights( lights:TILightStack ) Abstract
+	Method OnRenderLayer( drawLists:TDrawListStack ) Abstract
+	
+End Type
+?
 
 Type TRenderer
 

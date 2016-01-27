@@ -134,16 +134,16 @@ Function InitVbos()
 	glBufferData GL_ARRAY_BUFFER,PRIM_VBO_SIZE,Null,VBO_USAGE
 	
 	glEnableVertexAttribArray 0
-	glVertexAttribPointer 0,2,GL_FLOAT,False,BYTES_PER_VERTEX,0
+	glVertexAttribPointer 0,2,GL_FLOAT,False,BYTES_PER_VERTEX,Byte Ptr(0)
 	
 	glEnableVertexAttribArray 1
-	glVertexAttribPointer 1,2,GL_FLOAT,False,BYTES_PER_VERTEX,8
+	glVertexAttribPointer 1,2,GL_FLOAT,False,BYTES_PER_VERTEX,Byte Ptr(8)
 	
 	glEnableVertexAttribArray 2
-	glVertexAttribPointer 2,2,GL_FLOAT,False,BYTES_PER_VERTEX,16
+	glVertexAttribPointer 2,2,GL_FLOAT,False,BYTES_PER_VERTEX,Byte Ptr(16)
 	
 	glEnableVertexAttribArray 3
-	glVertexAttribPointer 3,4,GL_UNSIGNED_BYTE,True,BYTES_PER_VERTEX,24
+	glVertexAttribPointer 3,4,GL_UNSIGNED_BYTE,True,BYTES_PER_VERTEX,Byte Ptr(24)
 	
 	glGenBuffers(1, Varptr rs_ibo)
 	glBindBuffer GL_ELEMENT_ARRAY_BUFFER,rs_ibo
@@ -165,10 +165,10 @@ End Function
 
 Function BindVbos()
 	glBindBuffer( GL_ARRAY_BUFFER,rs_vbo )
-	glEnableVertexAttribArray( 0 ) ; glVertexAttribPointer 0,2,GL_FLOAT,False,BYTES_PER_VERTEX, 0
-	glEnableVertexAttribArray( 1 ) ; glVertexAttribPointer 1,2,GL_FLOAT,False,BYTES_PER_VERTEX, 8
-	glEnableVertexAttribArray( 2 ) ; glVertexAttribPointer 2,2,GL_FLOAT,False,BYTES_PER_VERTEX, 16
-	glEnableVertexAttribArray( 3 ) ; glVertexAttribPointer 3,4,GL_UNSIGNED_BYTE,True,BYTES_PER_VERTEX, 24
+	glEnableVertexAttribArray( 0 ) ; glVertexAttribPointer 0,2,GL_FLOAT,False,BYTES_PER_VERTEX, Byte Ptr(0)
+	glEnableVertexAttribArray( 1 ) ; glVertexAttribPointer 1,2,GL_FLOAT,False,BYTES_PER_VERTEX, Byte Ptr(8)
+	glEnableVertexAttribArray( 2 ) ; glVertexAttribPointer 2,2,GL_FLOAT,False,BYTES_PER_VERTEX, Byte Ptr(16)
+	glEnableVertexAttribArray( 3 ) ; glVertexAttribPointer 3,4,GL_UNSIGNED_BYTE,True,BYTES_PER_VERTEX, Byte Ptr(24)
 
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER,rs_ibo )
 End Function
@@ -493,9 +493,9 @@ Type TTexture Extends TRefCounted
 		If Not _flat _flat=Color( $ff888888 )
 		Return _flat
 	End Function
-	
+?bmxng	
 	Private
-	
+?
 	Field _seq:Int
 	Field _width:Int
 	Field _height:Int
@@ -802,8 +802,11 @@ The following material properties are supported:
 	
 	Field _vsource:String
 	Field _fsource:String
+?bmxng
 	Field _uniforms:TStringMap=New TStringMap
-	
+?Not bmxng
+	Field _uniforms:TMap=New TMap
+?	
 	Field _glPrograms:TGLProgram[MAX_LIGHTS+1]
 	
 	Field _defaultMaterial:TMaterial
@@ -881,7 +884,7 @@ The following material properties are supported:
 
 		Local vars:TMap=New TMap
 		
-		While p.Toke
+		While p.Toke()
 		
 			If p.CParse( "uniform" )
 				'uniform decl
@@ -1091,9 +1094,21 @@ Type TMaterial Extends TRefCounted
 	Rem
 	bbdoc: Gets vector shader parameter.
 	End Rem
+?bmxng
 	Method GetVector:Float[]( param:String,defValue:Float[]=[1.0,1.0,1.0,1.0] )
 		If Not _vectors.Contains( param ) Return defValue
 		Return _vectors.ValueForKey( param )
+?Not bmxng
+	Method GetVector:Float[]( param:String,defValue:Float[]=Null )
+		If Not _vectors.Contains( param ) Then
+			If defValue Then
+				Return defValue
+			Else
+				Return [1.0,1.0,1.0,1.0]
+			End If
+		End If
+		Return Float[](_vectors.ValueForKey( param ))
+?
 	End Method
 	
 	Rem
@@ -1132,7 +1147,7 @@ Type TMaterial Extends TRefCounted
 	
 		Local material:TMaterial=New TMaterial.Create( shader )
 
-		material=material.Shader.OnLoadMaterial( material,path,texFlags )
+		material=material.Shader().OnLoadMaterial( material,path,texFlags )
 		
 		Return material
 	End Function
@@ -1142,8 +1157,13 @@ Type TMaterial Extends TRefCounted
 	Field _shader:TShader
 	Field _colorTexture:TTexture
 	Field _scalars:TStringFloatMap=New TStringFloatMap
+?bmxng
 	Field _vectors:TStringMap=New TStringMap
 	Field _textures:TStringMap=New TStringMap
+?Not bmxng
+	Field _vectors:TMap=New TMap
+	Field _textures:TMap=New TMap
+?
 	Field _inited:Int
 	
 	Method Bind:Int()
@@ -1292,8 +1312,8 @@ TImage.Managed consumes more memory, and slows down image rendering somewhat so 
 		If Not texture Throw "Material has no ColorTexture"
 		_material=material
 		_material.Retain
-		_width=_material.Width
-		_height=_material.Height
+		_width=_material.Width()
+		_height=_material.Height()
 		SetHandle xhandle,yhandle
 		Return Self
 	End Method
@@ -1399,10 +1419,10 @@ TImage.Managed consumes more memory, and slows down image rendering somewhat so 
 		_x1=Float(_width)*(1-xhandle)
 		_y0=Float(_height)*-yhandle
 		_y1=Float(_height)*(1-yhandle)
-		_s0=Float(_x)/Float(_material.Width)
-		_t0=Float(_y)/Float(_material.Height)
-		_s1=Float(_x+_width)/Float(_material.Width)
-		_t1=Float(_y+_height)/Float(_material.Height)
+		_s0=Float(_x)/Float(_material.Width())
+		_t0=Float(_y)/Float(_material.Height())
+		_s1=Float(_x+_width)/Float(_material.Width())
+		_t1=Float(_y+_height)/Float(_material.Height())
 	End Method
 	
 	Rem
@@ -1426,7 +1446,7 @@ TImage.Managed consumes more memory, and slows down image rendering somewhat so 
 	End Method
 	
 	Function ImagesLoading:Int()
-		Return TTexture.TexturesLoading>0
+		Return TTexture.TexturesLoading()>0
 	End Function
 	
 	Rem
@@ -1464,8 +1484,8 @@ TImage.Managed consumes more memory, and slows down image rendering somewhat so 
 		Local material:TMaterial=TMaterial.Load( path,flags|TTexture.ClampST,shader )
 		If Not material Return Null
 		
-		Local cellWidth:Int=material.Width/numFrames
-		Local cellHeight:Int=material.Height
+		Local cellWidth:Int=material.Width()/numFrames
+		Local cellHeight:Int=material.Height()
 		
 		Local x:Int=0
 		Local width:Int=cellWidth
@@ -1542,7 +1562,12 @@ Type TFont
 	End Rem
 	Method TextWidth:Float( Text:String )
 		Local w:Float=0.0
+?bmxng
 		For Local char:Int=EachIn Text
+?Not bmxng
+		For Local i:Int=0 Until Text.length
+			Local char:Int = Text[i]
+?
 			Local glyph:TGlyph=GetGlyph( char )
 			If Not glyph Continue
 			w:+glyph.advance
@@ -1567,13 +1592,13 @@ Type TFont
 		Local image:TImage=TImage.Load( path )
 		If Not image Return Null
 		
-		Local cellWidth:Int=image.Width/numChars
-		Local cellHeight:Int=image.Height
+		Local cellWidth:Int=image.Width()/numChars
+		Local cellHeight:Int=image.Height()
 		Local glyphX:Int=0,glyphY:Int=0,glyphWidth:Int=cellWidth,glyphHeight:Int=cellHeight
 		If padded glyphX:+1;glyphY:+1;glyphWidth:-2;glyphHeight:-2
 
-		Local w:Int=image.Width/cellWidth
-		Local h:Int=image.Height/cellHeight
+		Local w:Int=image.Width()/cellWidth
+		Local h:Int=image.Height()/cellHeight
 
 		Local glyphs:TGlyph[]=New TGlyph[numChars]
 		
@@ -1593,8 +1618,8 @@ Type TFont
 		Local image:TImage=TImage.Load( path )
 		If Not image Return Null
 
-		Local w:Int=image.Width/cellWidth
-		Local h:Int=image.Height/cellHeight
+		Local w:Int=image.Width()/cellWidth
+		Local h:Int=image.Height()/cellHeight
 
 		Local glyphs:TGlyph[]=New TGlyph[numChars]
 		
@@ -2085,10 +2110,10 @@ Type TDrawList
 	end rem
 	Method DrawRectImageSourceSize( x0:Float,y0:Float,width:Float,height:Float,image:TImage,sourceX:Int,sourceY:Int,sourceWidth:Int,sourceHeight:Int )
 		Local material:TMaterial=image._material
-		Local s0:Float=Float(image._x+sourceX)/Float(material.Width)
-		Local t0:Float=Float(image._y+sourceY)/Float(material.Height)
-		Local s1:Float=Float(image._x+sourceX+sourceWidth)/Float(material.Width)
-		Local t1:Float=Float(image._y+sourceY+sourceHeight)/Float(material.Height)
+		Local s0:Float=Float(image._x+sourceX)/Float(material.Width())
+		Local t0:Float=Float(image._y+sourceY)/Float(material.Height())
+		Local s1:Float=Float(image._x+sourceX+sourceWidth)/Float(material.Width())
+		Local t1:Float=Float(image._y+sourceY+sourceHeight)/Float(material.Height())
 		DrawRect x0,y0,width,height,material,s0,t0,s1,t1
 	End Method
 	
@@ -2171,7 +2196,12 @@ Type TDrawList
 	Method DrawText( Text:String,x:Float,y:Float,xhandle:Float=0,yhandle:Float=0 )
 		x:-_font.TextWidth( Text )*xhandle
 		y:-_font.TextHeight( Text )*yhandle
+?bmxng
 		For Local char:Int=EachIn Text
+?Not bmxng
+		For Local i:Int=0 Until Text.length
+			Local char:Int = Text[i]
+?
 			Local glyph:TGlyph=_font.GetGlyph( char )
 			If Not glyph Continue
 			DrawRectImageSource x,y,glyph.image,glyph.x,glyph.y,glyph.width,glyph.height
@@ -2337,7 +2367,7 @@ Type TDrawList
 		Case 3
 			glDrawArrays GL_TRIANGLES,index,count
 		Case 4
-			glDrawElements GL_TRIANGLES,count/4*6,GL_UNSIGNED_SHORT,(index/4*6 + (index&3)*MAX_QUAD_INDICES)*2
+			glDrawElements GL_TRIANGLES,count/4*6,GL_UNSIGNED_SHORT,Byte Ptr((index/4*6 + (index&3)*MAX_QUAD_INDICES)*2)
 		Default
 			Local j:Int=0
 			While j<count
@@ -2513,8 +2543,8 @@ Type TDrawList
 	End Method
 	
 	Method PrimVert( x0:Float,y0:Float,s0:Float,t0:Float ) Final
-		Local df:Float Ptr = (_data._buf + _next)
-		Local di:Int Ptr = (_data._buf + _next)
+		Local df:Float Ptr = Float Ptr(_data._buf + _next)
+		Local di:Int Ptr = Int Ptr(_data._buf + _next)
 		df[0] = x0 * _ix + y0 * _jx + _tx
 		df[1] = x0 * _iy + y0 * _jy + _ty
 		df[2] = s0
@@ -2562,23 +2592,23 @@ Type TCanvas Extends TDrawList
 		Else If TImage( target )
 		
 			_image=TImage( target )
-			_texture=_image.Material.ColorTexture
-			If Not (_texture.Flags & TTexture.RenderTarget) Throw "Texture is not a render target texture"
-			_width=_image.Width
-			_height=_image.Height
-			_twidth=_texture.Width
-			_theight=_texture.Height
+			_texture=_image.Material().ColorTexture()
+			If Not (_texture.Flags() & TTexture.RenderTarget) Throw "Texture is not a render target texture"
+			_width=_image.Width()
+			_height=_image.Height()
+			_twidth=_texture.Width()
+			_theight=_texture.Height()
 			
 		Else If TTexture( target )
 		
 			_image=Null
 			_texture=TTexture( target )
 
-			If Not (_texture.Flags & TTexture.RenderTarget) Throw "Texture is not a render target texture"
-			_width=_texture.Width
-			_height=_texture.Height
-			_twidth=_texture.Width
-			_theight=_texture.Height
+			If Not (_texture.Flags() & TTexture.RenderTarget) Throw "Texture is not a render target texture"
+			_width=_texture.Width()
+			_height=_texture.Height()
+			_twidth=_texture.Width()
+			_theight=_texture.Height()
 			
 		Else
 		
@@ -2955,7 +2985,7 @@ Type TCanvas Extends TDrawList
 	End Method
 
 	Method FlushPrims()
-		If Super.IsEmpty Return
+		If Super.IsEmpty() Return
 		Validate
 		Super.Flush
 	End Method
