@@ -451,14 +451,24 @@ Type TTexture Extends TRefCounted
 	End Function
 	
 	Function Color:TTexture( color:Int )
+?bmxng
 		Local tex:TTexture=TTexture(_colors.ValueForKey( color ))
+?Not bmxng
+		Local c:TIntVal = New TIntVal
+		c.value = color
+		Local tex:TTexture=TTexture(_colors.ValueForKey( c ))
+?
 		If tex Return tex
 
 		Local pixmap:TPixmap=New TPixmap.Create( 1,1,PF_RGBA8888 )
 		pixmap.ClearPixels( color )
 
 		tex=New TTexture.Create( 1,1,PF_RGBA8888,ClampST,pixmap )
+?bmxng
 		_colors.Insert color,tex
+?Not bmxng
+		_colors.Insert c,tex
+?
 		Return tex
 	End Function
 	
@@ -507,7 +517,11 @@ Type TTexture Extends TRefCounted
 	Field _glTexture:Int
 	Field _glFramebuffer:Int
 
-	Global _colors:TIntMap=New TIntMap'<TTexture>
+?bmxng
+	Global _colors:TIntMap=New TIntMap
+?Not bmxng
+	Global _colors:TMap=New TMap
+?
 	Global _black:TTexture
 	Global _white:TTexture
 	Global _magenta:TTexture
@@ -3251,3 +3265,12 @@ Type TDrawListStack
 	End Method
 
 End Type
+
+?Not bmxng
+Type TIntVal
+	Field value:Int
+	Method Compare:Int(v:Object)
+		Return value - TIntVal(v).value
+	End Method
+End Type
+?

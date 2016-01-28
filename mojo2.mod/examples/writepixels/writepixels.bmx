@@ -35,9 +35,9 @@ While Not KeyDown(key_escape)
 				b=.5
 			EndIf
 			
-			Local rgba:Int=a*255 Shl 24 | b*255 Shl 16 | g*255 Shl 8 | r*255
+			Local rgba:Int=Int(a*255) Shl 24 | Int(b*255) Shl 16 | Int(g*255) Shl 8 | Int(r*255)
 			
-			Local pix:Int Ptr = data.pixels
+			Local pix:Int Ptr = Int Ptr(data.pixels)
 			For Local i:Int=0 Until 16*16
 				pix[i] = rgba
 			Next
