@@ -71,7 +71,7 @@ ms = MilliSecs()
 	canvas.DrawLine 32,32,640-32,480-32
 	canvas.DrawLine 640-32,32,32,480-32
 
-	canvas.SetColor r/255.0,g/255.0,b/255.0,Sin(ang * 5)*.5+.5
+	canvas.SetColor r/255.0,g/255.0,b/255.0,Float(Sin(ang * 5)*.5+.5)
 	canvas.DrawImageXYZ image,320,240,0
 	canvas.SetAlpha 1
 

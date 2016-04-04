@@ -17,12 +17,12 @@ Local drawList:TDrawList = New TDrawList
 
 For Local i:Int=0 Until 100
 
-	drawList.SetColor Rnd(),Rnd(),Rnd()
+	drawList.SetColor Float(Rnd()),Float(Rnd()),Float(Rnd())
 	
-	drawList.DrawCircle rnd(GraphicsWidth())-GraphicsWidth()/2,Rnd(GraphicsHeight())-GraphicsHeight()/2,Rnd(10,20)
+	drawList.DrawCircle Float(Rnd(GraphicsWidth())-GraphicsWidth()/2),Float(Rnd(GraphicsHeight())-GraphicsHeight()/2),Float(Rnd(10,20))
 Next
 
-Local angle:float = 0
+Local angle:Float = 0
 
 While Not KeyDown(KEY_ESCAPE)
 

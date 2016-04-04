@@ -24,7 +24,7 @@ While Not KeyDown(key_escape)
 	For Local x:Int=0 Until 16
 		For Local y:Int=0 Until 16
 			If (x~y)&1
-				icanvas.SetColor Sin( MilliSecs()*.1 )*.5+.5,Cos( MilliSecs()*.1 )*.5+.5,.5
+				icanvas.SetColor Float(Sin( MilliSecs()*.1 )*.5+.5),Float(Cos( MilliSecs()*.1 )*.5+.5),.5
 			Else
 				icanvas.SetColor 1,1,0
 			EndIf
