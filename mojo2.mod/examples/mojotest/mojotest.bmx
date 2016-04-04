@@ -2,8 +2,7 @@ SuperStrict
 
 Framework mky.mojo2
 ?Not opengles
-'Import brl.GLGraphics
-Import sdl.sdlgraphics
+Import brl.GLGraphics
 ?opengles
 Import sdl.sdlgraphics
 ?
