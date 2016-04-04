@@ -159,8 +159,7 @@ Function InitVbos()
 			idxs.PokeShort i*12+k+10,i*4+j+3
 		Next
 	Next
-	Local size:Int = idxs.Size()
-	glBufferData GL_ELEMENT_ARRAY_BUFFER,Varptr size,idxs._buf,GL_STATIC_DRAW
+	glBufferData GL_ELEMENT_ARRAY_BUFFER,Int(idxs.Size()),idxs._buf,GL_STATIC_DRAW
 	'idxs.Discard
 End Function
 
