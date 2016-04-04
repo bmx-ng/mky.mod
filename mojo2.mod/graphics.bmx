@@ -159,7 +159,8 @@ Function InitVbos()
 			idxs.PokeShort i*12+k+10,i*4+j+3
 		Next
 	Next
-	glBufferData GL_ELEMENT_ARRAY_BUFFER,idxs.Size(),idxs._buf,GL_STATIC_DRAW
+	Local size:Int = idxs.Size()
+	glBufferData GL_ELEMENT_ARRAY_BUFFER,Varptr size,idxs._buf,GL_STATIC_DRAW
 	'idxs.Discard
 End Function
 
@@ -1792,7 +1793,7 @@ Type TDrawList
 	bbdoc: Rotates the current 2d matrix.
 	end rem
 	Method Rotate( rz:Float )
-		Transform Cos( rz ),-Sin( rz ),Sin( rz ),Cos( rz ),0,0
+		Transform Float(Cos( rz )),Float(-Sin( rz )),Float(Sin( rz )),Float(Cos( rz )),0,0
 	End Method
 	
 	Rem
@@ -3119,7 +3120,7 @@ Type TCanvas Extends TDrawList
 		EndIf
 		
 		If _dirty & DIRTY_COLORMASK
-			glColorMask _colorMask[0],_colorMask[1],_colorMask[2],_colorMask[3]
+			glColorMask Byte(_colorMask[0]),Byte(_colorMask[1]),Byte(_colorMask[2]),Byte(_colorMask[3])
 		End If
 		
 		_dirty=0

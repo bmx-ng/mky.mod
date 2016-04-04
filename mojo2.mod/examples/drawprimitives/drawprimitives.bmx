@@ -51,7 +51,7 @@ While Not KeyDown(key_escape)
 
 	canvas.Clear 0,0,1
 		
-	canvas.SetColor Sin( MilliSecs()*.01 )*.5+.5,Cos( MilliSecs()*.03 )*.5+.5,Sin( MilliSecs()*.05 )*.5+.5
+	canvas.SetColor Float(Sin( MilliSecs()*.01 )*.5+.5),Float(Cos( MilliSecs()*.03 )*.5+.5),Float(Sin( MilliSecs()*.05 )*.5+.5)
 	
 	canvas.PushMatrix
 	canvas.Translate MouseX(),MouseY()
