@@ -799,8 +799,8 @@ The following material properties are supported:
 	The @material parameter is an already initialized material.
 	This method should return @material if successful, or null on failure.
 	end rem
-	Method OnLoadMaterial:TMaterial( material:TMaterial,path:String,texFlags:Int )
-		Local texture:TTexture=TTexture.Load( path,PF_RGBA8888,texFlags )
+	Method OnLoadMaterial:TMaterial( material:TMaterial,url:Object,texFlags:Int )
+		Local texture:TTexture=TTexture.Load( url,PF_RGBA8888,texFlags )
 		If Not texture Return Null
 		material.SetTexture "ColorTexture",texture
 		If texture texture.Free
@@ -975,27 +975,38 @@ Type TBumpShader Extends TShader
 		material.SetScalar "Roughness",1.0
 	End Method
 	
-	Method OnLoadMaterial:TMaterial( material:TMaterial,path:String,texFlags:Int )
+	Method OnLoadMaterial:TMaterial( material:TMaterial,url:Object,texFlags:Int )
 
 		Local format:Int = PF_RGBA8888
 	
-		Local ext:String = ExtractExt( path )
-		If ext path=StripExt( path ) Else ext="png"
-		
-		Local colorTex:TTexture=TTexture.Load( path+"."+ext,format,texFlags )
-		If Not colorTex colorTex=TTexture.Load( path+"_d."+ext,format,texFlags )
-		If Not colorTex colorTex=TTexture.Load( path+"_diff."+ext,format,texFlags )
-		If Not colorTex colorTex=TTexture.Load( path+"_diffuse."+ext,format,texFlags )
-		
-		Local specularTex:TTexture=TTexture.Load( path+"_s."+ext,format,texFlags )
-		If Not specularTex specularTex=TTexture.Load( path+"_spec."+ext,format,texFlags )
-		If Not specularTex specularTex=TTexture.Load( path+"_specular."+ext,format,texFlags )
-		If Not specularTex specularTex=TTexture.Load( path+"_SPECULAR."+ext,format,texFlags )
-		
-		Local normalTex:TTexture=TTexture.Load( path+"_n."+ext,format,texFlags )
-		If Not normalTex normalTex=TTexture.Load( path+"_norm."+ext,format,texFlags )
-		If Not normalTex normalTex=TTexture.Load( path+"_normal."+ext,format,texFlags )
-		If Not normalTex normalTex=TTexture.Load( path+"_NORMALS."+ext,format,texFlags )
+		Local path:String = String(url)
+	
+		Local colorTex:TTexture
+		Local specularTex:TTexture
+		Local normalTex:TTexture
+	
+		If Not path Then
+			colorTex=TTexture.Load( url,format,texFlags )
+		Else
+			Local ext:String = ExtractExt( path )
+			If ext path=StripExt( path ) Else ext="png"
+			
+			colorTex=TTexture.Load( path+"."+ext,format,texFlags )
+			If Not colorTex colorTex=TTexture.Load( path+"_d."+ext,format,texFlags )
+			If Not colorTex colorTex=TTexture.Load( path+"_diff."+ext,format,texFlags )
+			If Not colorTex colorTex=TTexture.Load( path+"_diffuse."+ext,format,texFlags )
+			
+			specularTex = TTexture.Load( path+"_s."+ext,format,texFlags )
+			If Not specularTex specularTex=TTexture.Load( path+"_spec."+ext,format,texFlags )
+			If Not specularTex specularTex=TTexture.Load( path+"_specular."+ext,format,texFlags )
+			If Not specularTex specularTex=TTexture.Load( path+"_SPECULAR."+ext,format,texFlags )
+			
+			normalTex = TTexture.Load( path+"_n."+ext,format,texFlags )
+			If Not normalTex normalTex=TTexture.Load( path+"_norm."+ext,format,texFlags )
+			If Not normalTex normalTex=TTexture.Load( path+"_normal."+ext,format,texFlags )
+			If Not normalTex normalTex=TTexture.Load( path+"_NORMALS."+ext,format,texFlags )
+
+		End If
 		
 		If Not colorTex And Not specularTex And Not normalTex Return Null
 
@@ -1157,11 +1168,11 @@ Type TMaterial Extends TRefCounted
 	bbdoc: Loads a material.
 	about: If @shader is null, the TShader.DefaultShader is used.
 	End Rem
-	Function Load:TMaterial( path:String,texFlags:Int,shader:TShader )
+	Function Load:TMaterial( url:Object,texFlags:Int,shader:TShader )
 	
 		Local material:TMaterial=New TMaterial.Create( shader )
 
-		material=material.Shader().OnLoadMaterial( material,path,texFlags )
+		material=material.Shader().OnLoadMaterial( material,url,texFlags )
 		
 		Return material
 	End Function
@@ -1483,19 +1494,19 @@ TImage.Managed consumes more memory, and slows down image rendering somewhat so 
 	Rem
 	bbdoc: 
 	End Rem
-	Function Load:TImage( path:String,xhandle:Float=.5,yhandle:Float=.5,flags:Int=TImage.Filter|TImage.Mipmap,shader:TShader=Null )
+	Function Load:TImage( url:Object,xhandle:Float=.5,yhandle:Float=.5,flags:Int=TImage.Filter|TImage.Mipmap,shader:TShader=Null )
 		flags:&_flagsMask
 	
-		Local material:TMaterial=TMaterial.Load( path,flags|TTexture.ClampST,shader )
+		Local material:TMaterial=TMaterial.Load( url,flags|TTexture.ClampST,shader )
 		If Not material Return Null
 
 		Return New TImage.CreateMaterial( material,xhandle,yhandle )
 	End Function
 	
-	Function LoadFrames:TImage[]( path:String,numFrames:Int,padded:Int=False,xhandle:Float=.5,yhandle:Float=.5,flags:Int=TImage.Filter|TImage.Mipmap,shader:TShader=Null )
+	Function LoadFrames:TImage[]( url:Object,numFrames:Int,padded:Int=False,xhandle:Float=.5,yhandle:Float=.5,flags:Int=TImage.Filter|TImage.Mipmap,shader:TShader=Null )
 		flags:&_flagsMask
 	
-		Local material:TMaterial=TMaterial.Load( path,flags|TTexture.ClampST,shader )
+		Local material:TMaterial=TMaterial.Load( url,flags|TTexture.ClampST,shader )
 		If Not material Return Null
 		
 		Local cellWidth:Int=material.Width()/numFrames
@@ -1601,9 +1612,9 @@ Type TFont
 	about: Glyphs should be laid out horizontally within the source image.
 	If @padded is true, then each glyph is assumed to have a transparent one pixel padding border around it.
 	End Rem
-	Function Load:TFont( path:String,firstChar:Int,numChars:Int,padded:Int )
+	Function Load:TFont( url:Object,firstChar:Int,numChars:Int,padded:Int )
 
-		Local image:TImage=TImage.Load( path )
+		Local image:TImage=TImage.Load( url )
 		If Not image Return Null
 		
 		Local cellWidth:Int=image.Width()/numChars
@@ -1627,9 +1638,9 @@ Type TFont
 	
 	End Function
 	
-	Function LoadSize:TFont( path:String,cellWidth:Int,cellHeight:Int,glyphX:Int,glyphY:Int,glyphWidth:Int,glyphHeight:Int,firstChar:Int,numChars:Int )
+	Function LoadSize:TFont( url:Object,cellWidth:Int,cellHeight:Int,glyphX:Int,glyphY:Int,glyphWidth:Int,glyphHeight:Int,firstChar:Int,numChars:Int )
 
-		Local image:TImage=TImage.Load( path )
+		Local image:TImage=TImage.Load( url )
 		If Not image Return Null
 
 		Local w:Int=image.Width()/cellWidth
