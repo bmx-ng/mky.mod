@@ -98,7 +98,7 @@ Function Mat4Ortho:Float[]( Left:Float,Right:Float,bottom:Float,top:Float,znear:
 
 	Local w:Float=Right-Left,h:Float=top-bottom,d:Float=zfar-znear
 	
-	Return [ 2.0/w,0,0,0, 0,2.0/h,0,0, 0,0,2.0/d,0, -(Right+Left)/w,-(top+bottom)/h,-(zfar+znear)/d,1 ]
+	Return [ 2.0/w,.0,.0,.0, .0,2.0/h,.0,.0, .0,.0,2.0/d,.0, -(Right+Left)/w,-(top+bottom)/h,-(zfar+znear)/d,1.0 ]
 End Function
 
 Type TMyLight Implements ILight
