@@ -503,6 +503,11 @@ Type TTexture Extends TRefCounted
 		If Not _flat _flat=Color( $ff888888 )
 		Return _flat
 	End Function
+	
+	Method Data:TPixmap()
+		Return _data
+	End Method
+	
 ?bmxng	
 	Private
 ?
@@ -1083,12 +1088,12 @@ Type TMaterial Extends TRefCounted
 	End Method
 	
 	Method Width:Int()
-		If _colorTexture Return _colorTexture._width
+		If _colorTexture Return _colorTexture.Width()
 		Return 0
 	End Method
 	
 	Method Height:Int()
-		If _colorTexture Return _colorTexture._height
+		If _colorTexture Return _colorTexture.Height()
 		Return 0
 	End Method
 	
@@ -2923,17 +2928,17 @@ Type TCanvas Extends TDrawList
 		
 		If Not _texture Return
 		
-		If _texture._flags & TTexture.Managed
+		If _texture.Flags() & TTexture.Managed
 			Validate
 
 			glDisable GL_SCISSOR_TEST
 			glViewport 0,0,_twidth,_theight
 			
 			If _width=_twidth And _height=_theight
-				glReadPixels 0,0,_twidth,_theight,GL_RGBA,GL_UNSIGNED_BYTE, _texture._data.pixels
+				glReadPixels 0,0,_twidth,_theight,GL_RGBA,GL_UNSIGNED_BYTE, _texture.Data().pixels
 			Else
 				For Local y:Int=0 Until _height
-					glReadPixels _image._x,_image._y+y,_width,1,GL_RGBA,GL_UNSIGNED_BYTE,_texture._data.pixels + (_image._y+y) * (_twidth*4) + (_image._x*4)
+					glReadPixels _image._x,_image._y+y,_width,1,GL_RGBA,GL_UNSIGNED_BYTE,_texture.Data().pixels + (_image._y+y) * (_twidth*4) + (_image._x*4)
 				Next
 			EndIf
 
