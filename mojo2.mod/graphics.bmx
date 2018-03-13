@@ -148,15 +148,21 @@ Function InitVbos()
 	glGenBuffers(1, Varptr rs_ibo)
 	glBindBuffer GL_ELEMENT_ARRAY_BUFFER,rs_ibo
 	Local idxs:TBank=New TBank.Create( MAX_QUAD_INDICES*4*2 )
+?bmxng
+	For Local j:Size_t = 0 Until 4
+		Local k:Size_T = j*MAX_QUAD_INDICES*2
+		For Local i:Size_T = 0 Until MAX_QUADS
+?Not bmxng
 	For Local j:Int = 0 Until 4
 		Local k:Int = j*MAX_QUAD_INDICES*2
 		For Local i:Int = 0 Until MAX_QUADS
-			idxs.PokeShort i*12+k+0,i*4+j+0
-			idxs.PokeShort i*12+k+2,i*4+j+1
-			idxs.PokeShort i*12+k+4,i*4+j+2
-			idxs.PokeShort i*12+k+6,i*4+j+0
-			idxs.PokeShort i*12+k+8,i*4+j+2
-			idxs.PokeShort i*12+k+10,i*4+j+3
+?
+			idxs.PokeShort i*12+k+0,Int(i*4+j+0)
+			idxs.PokeShort i*12+k+2,Int(i*4+j+1)
+			idxs.PokeShort i*12+k+4,Int(i*4+j+2)
+			idxs.PokeShort i*12+k+6,Int(i*4+j+0)
+			idxs.PokeShort i*12+k+8,Int(i*4+j+2)
+			idxs.PokeShort i*12+k+10,Int(i*4+j+3)
 		Next
 	Next
 	glBufferData GL_ELEMENT_ARRAY_BUFFER,Int(idxs.Size()),idxs._buf,GL_STATIC_DRAW
@@ -345,7 +351,11 @@ Type TTexture Extends TRefCounted
 			If Not dataPitch dataPitch=width*4
 			
 			For Local iy:Int=0 Until height
+?bmxng
+				MemCopy _data.pixels + (y+iy)*texPitch+x*4, data.pixels + dataOffset+iy*dataPitch, Size_T(width*4)
+?Not bmxng
 				MemCopy _data.pixels + (y+iy)*texPitch+x*4, data.pixels + dataOffset+iy*dataPitch, width*4
+?
 			Next
 			
 		EndIf
@@ -2361,7 +2371,11 @@ Type TDrawList
 		Local data:TBank=New TBank.Create( _next )
 		'_data.CopyBytes 0,data,0,_next
 		'_data.Discard
+?bmxng
+		MemCopy(data._buf,_data._buf,Size_T(_next))
+?Not bmxng
 		MemCopy(data._buf,_data._buf,_next)
+?
 		_data=data
 	End Method
 	
@@ -2525,7 +2539,11 @@ Type TDrawList
 		If _next+order*BYTES_PER_VERTEX>_data.Size()
 			Local newsize:Int=Max( _data.Size()+_data.Size()/2,_next+order*BYTES_PER_VERTEX )
 			Local data:TBank=New TBank.Create( newsize )
+?bmxng
+			MemCopy(data._buf, _data._buf, Size_T(_next))
+?Not bmxng
 			MemCopy(data._buf, _data._buf, _next)
+?
 			'_data.CopyBytes 0,data,0,_next
 			'_data.Discard
 			_data=data
@@ -2554,7 +2572,11 @@ Type TDrawList
 		If _next+count*BYTES_PER_VERTEX>_data.Size()
 			Local newsize:Int=Max( _data.Size()+_data.Size()/2,_next+count*BYTES_PER_VERTEX )
 			Local data:TBank=New TBank.Create( newsize )
+?bmxng
+			MemCopy data._buf, _data._buf, Size_T(_next)
+?Not bmxng
 			MemCopy data._buf, _data._buf, _next
+?
 			_data=data
 		EndIf
 	
