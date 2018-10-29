@@ -1134,11 +1134,6 @@ Type TMaterial Extends TRefCounted
 	Rem
 	bbdoc: Gets vector shader parameter.
 	End Rem
-?bmxng
-	Method GetVector:Float[]( param:String,defValue:Float[]=[1.0,1.0,1.0,1.0] )
-		If Not _vectors.Contains( param ) Return defValue
-		Return _vectors.ValueForKey( param )
-?Not bmxng
 	Method GetVector:Float[]( param:String,defValue:Float[]=Null )
 		If Not _vectors.Contains( param ) Then
 			If defValue Then
@@ -1148,7 +1143,6 @@ Type TMaterial Extends TRefCounted
 			End If
 		End If
 		Return Float[](_vectors.ValueForKey( param ))
-?
 	End Method
 	
 	Rem
