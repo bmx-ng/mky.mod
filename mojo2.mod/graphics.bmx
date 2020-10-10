@@ -70,7 +70,7 @@ Global tmpMat3d:Float[16]
 Global tmpMat3d2:Float[16]
 
 Global flipYMatrix:Float[]=Mat4New()
-Global graphicsSeq:Int=1
+'Global graphicsSeq:Int=1
 Global vbosSeq:Int
 
 'shader params
